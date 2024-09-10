@@ -28,14 +28,39 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
 
-    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {}
+    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        let (r, g, b) = tuple;
+
+        for color in [r, g, b] {
+            if !(0..=254).contains(&color) {
+                return Err(IntoColorError::IntConversion);
+            }
+        }
+        Ok(Self {
+            red: r as u8,
+            green: g as u8,
+            blue: b as u8,
+        })
+    }
 }
 
 // TODO: Array implementation.
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
 
-    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {}
+    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        let arr_iter = arr.iter();
+        for color in arr_iter {
+            if !(0..=254).contains(color) {
+                return Err(IntoColorError::IntConversion);
+            }
+        }
+        Ok(Self {
+            red: arr[0] as u8,
+            green: arr[1] as u8,
+            blue: arr[2] as u8,
+        })
+    }
 }
 
 // TODO: Slice implementation.
@@ -43,7 +68,27 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
 
-    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {}
+    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        let mut slice_iter = slice.iter();
+        let (Some(r), Some(g), Some(b), None) = (
+            slice_iter.next(),
+            slice_iter.next(),
+            slice_iter.next(),
+            slice_iter.next(),
+        ) else {
+            return Err(IntoColorError::BadLen);
+        };
+        for color in [r, g, b] {
+            if !(0..=254).contains(color) {
+                return Err(IntoColorError::IntConversion);
+            }
+        }
+        Ok(Self {
+            red: *r as u8,
+            green: *g as u8,
+            blue: *b as u8,
+        })
+    }
 }
 
 fn main() {
